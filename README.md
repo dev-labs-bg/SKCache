@@ -187,4 +187,4 @@ We would love you to contribute to **SKCache**, so:
 
 ## License
 
-**SKCache** is available under the MIT license. See the [LICENSE](https://github.com/dev-labs-bg/SKCache/blob/master/LICENSE.md)
+**SKCache** is available under the MIT license. See the [LICENSE](https://github.com/dev-labs-bg/SKCache/blob/master/LICENSE)
