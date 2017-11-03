@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'SKCache_Example' do
+  pod 'SKCache', :path => '../'
+
+  target 'SKCache_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
