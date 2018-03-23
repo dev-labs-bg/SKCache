@@ -170,8 +170,8 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
       }
       
       for object in objects {
-        
-        let fileName = fileDirectory.appendingPathComponent(object.key)
+        let fileFormatedName = object.key.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? object.key
+        let fileName = fileDirectory.appendingPathComponent(fileFormatedName)
         
         let data = NSKeyedArchiver.archivedData(withRootObject: object)
         
