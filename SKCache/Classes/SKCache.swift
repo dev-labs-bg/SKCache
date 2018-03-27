@@ -18,6 +18,7 @@ public enum Operations: Swift.Error {
   case deletaFail
   case saveFail
   case loadFail
+  case folderCreation
 }
 
 /// Enum to indicate the live time of each time in the cache
@@ -159,15 +160,11 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
       let cacheDirectory = try fileManager.url(for: .cachesDirectory, in: .allDomainsMask, appropriateFor: nil, create: false)
       let fileDirectory = cacheDirectory.appendingPathComponent("spacekit")
       
-      var isDirectory: ObjCBool = false
-      
       var fileDir = fileDirectory.absoluteString
       let range = fileDir.startIndex..<fileDir.index(fileDir.startIndex, offsetBy: 7)
       fileDir.removeSubrange(range)
       
-      if !fileManager.fileExists(atPath: fileDir, isDirectory: &isDirectory) {
-        try fileManager.createDirectory(at: fileDirectory, withIntermediateDirectories: false, attributes: nil)
-      }
+      try createFolderIfNeeded(atPath: fileDir, absolutePath: fileDirectory)
       
       for object in objects {
         let fileFormatedName = object.key.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? object.key
@@ -192,18 +189,22 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
     let fileManager = FileManager.default
     do {
       let cacheDirectory = try fileManager.url(for: .cachesDirectory, in: .allDomainsMask, appropriateFor: nil, create: false)
-      var fileDirectory = cacheDirectory.appendingPathComponent("spacekit").absoluteString
-      let range = fileDirectory.startIndex..<fileDirectory.index(fileDirectory.startIndex, offsetBy: 7)
-      fileDirectory.removeSubrange(range)
+      let fileDirectory = cacheDirectory.appendingPathComponent("spacekit")
       
-      let paths = try fileManager.contentsOfDirectory(atPath: fileDirectory)
+      var fileDir = fileDirectory.absoluteString
+      let range = fileDir.startIndex..<fileDir.index(fileDir.startIndex, offsetBy: 7)
+      fileDir.removeSubrange(range)
+      
+      try createFolderIfNeeded(atPath: fileDir, absolutePath: fileDirectory)
+      
+      let paths = try fileManager.contentsOfDirectory(atPath: fileDir)
       
       for path in paths {
-        if let object = NSKeyedUnarchiver.unarchiveObject(withFile: fileDirectory + path) as? SKObject {
+        if let object = NSKeyedUnarchiver.unarchiveObject(withFile: fileDir + path) as? SKObject {
           if !object.isExpired {
             SKCache.shared.add(object: object)
           } else {
-            try? fileManager.removeItem(atPath: fileDirectory + path)
+            try? fileManager.removeItem(atPath: fileDir + path)
           }
         }
       }
@@ -228,6 +229,22 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
   private let cacheKey = Bundle.main.bundleIdentifier ?? ""
   
   // MARK: - Private methods
+  
+  /// Private method to create the cache folder if it doesn't exist
+  ///
+  /// - Parameter path: The path where the folder will be created
+  private func createFolderIfNeeded(atPath path: String, absolutePath: URL) throws {
+    let fileManager = FileManager.default
+    var isDirectory: ObjCBool = false
+    
+    do {
+      if !fileManager.fileExists(atPath: path, isDirectory: &isDirectory) {
+        try fileManager.createDirectory(at: absolutePath, withIntermediateDirectories: false, attributes: nil)
+      }
+    } catch {
+      throw Operations.folderCreation
+    }
+  }
   
 }
 
