@@ -90,7 +90,7 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
         }
       }
     }
-    
+  
     return Static.instance
   }
   
@@ -101,6 +101,9 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
   
   /// Static property to store the cost limit of the cache (by default it is 0)
   open static var elementsCostLimit = 0
+  
+  /// Static property to indicate wether the cached objects will be added to the disk storage or not
+  open static var isOnlyInMemory = false
   
   // MARK: - Public properties
   
@@ -113,14 +116,18 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
   ///
   /// - Parameter object: The object which will be added to the cache
   open func add(object: SKObject) {
-    var objects = SKCache.shared.object(forKey: cacheKey as AnyObject) as? [SKObject]
-
+    var objects = self.object(forKey: cacheKey as AnyObject) as? [SKObject]
+    
     if objects?.contains(where: { $0.key == object.key }) == false {
       objects?.append(object)
       
-      SKCache.shared.setObject(objects as AnyObject, forKey: SKCache.shared.cacheKey as AnyObject)
+      setObject(objects as AnyObject, forKey: cacheKey as AnyObject)
     } else {
       update(object: object)
+    }
+    
+    if !SKCache.isOnlyInMemory {
+      try? save(object: object)
     }
   }
   
@@ -129,7 +136,7 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
   /// - Parameter key: The key of the searched object
   /// - Returns: The object found under the given key ot nil
   open func get<T>(forKey key: String) -> T? {
-    let objects = SKCache.shared.object(forKey: cacheKey as AnyObject) as? [SKObject]
+    let objects = self.object(forKey: cacheKey as AnyObject) as? [SKObject]
     
     let objectsOfType = objects?.filter({ $0.value is T })
     
@@ -140,21 +147,22 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
   ///
   /// - Parameter object: The new object
   open func update(object: SKObject) {
-    var objects = SKCache.shared.object(forKey: cacheKey as AnyObject) as? [SKObject]
+    var objects = self.object(forKey: cacheKey as AnyObject) as? [SKObject]
     
     if let index = objects?.index(where: { $0.key == object.key }) {
       objects?.remove(at: index)
       objects?.append(object)
     }
     
-    SKCache.shared.setObject(objects as AnyObject, forKey: SKCache.shared.cacheKey as AnyObject)
+    setObject(objects as AnyObject, forKey: cacheKey as AnyObject)
   }
   
   /// Public method to save all cache content to the disk
   ///
   /// - Throws: An error if such occures during save
+  @available(*, deprecated, message: "The library automaticaly saves cached objects to the disk if the property isOnlyInMemory is false")
   open func save() throws {
-    let objects = SKCache.shared.object(forKey: cacheKey as AnyObject) as? [SKObject] ?? [SKObject]()
+    let objects = self.object(forKey: cacheKey as AnyObject) as? [SKObject] ?? [SKObject]()
     let fileManager = FileManager.default
     do {
       let cacheDirectory = try fileManager.url(for: .cachesDirectory, in: .allDomainsMask, appropriateFor: nil, create: false)
@@ -175,41 +183,10 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
         try? data.write(to: fileName)
       }
       
-      SKCache.shared.setObject([SKObject]() as AnyObject, forKey: SKCache.shared.cacheKey as AnyObject)
+      setObject([SKObject]() as AnyObject, forKey: cacheKey as AnyObject)
       
     } catch {
       throw Operations.saveFail
-    }
-  }
-  
-  /// Public method to load all object from disk to memory
-  ///
-  /// - Throws: An error if such occures during load
-  open func load() throws {
-    let fileManager = FileManager.default
-    do {
-      let cacheDirectory = try fileManager.url(for: .cachesDirectory, in: .allDomainsMask, appropriateFor: nil, create: false)
-      let fileDirectory = cacheDirectory.appendingPathComponent("spacekit")
-      
-      var fileDir = fileDirectory.absoluteString
-      let range = fileDir.startIndex..<fileDir.index(fileDir.startIndex, offsetBy: 7)
-      fileDir.removeSubrange(range)
-      
-      try createFolderIfNeeded(atPath: fileDir, absolutePath: fileDirectory)
-      
-      let paths = try fileManager.contentsOfDirectory(atPath: fileDir)
-      
-      for path in paths {
-        if let object = NSKeyedUnarchiver.unarchiveObject(withFile: fileDir + path) as? SKObject {
-          if !object.isExpired {
-            SKCache.shared.add(object: object)
-          } else {
-            try? fileManager.removeItem(atPath: fileDir + path)
-          }
-        }
-      }
-    } catch {
-      throw Operations.loadFail
     }
   }
   
@@ -219,6 +196,7 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
     super.init()
     
     setObject([SKObject]() as AnyObject ,forKey: cacheKey as AnyObject)
+    try? load()
   }
   
   // MARK: - Override methods
@@ -246,5 +224,67 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
     }
   }
   
+  /// Public method to load all object from disk to memory
+  ///
+  /// - Throws: An error if such occures during load
+  private func load() throws {
+    let fileManager = FileManager.default
+    do {
+      let cacheDirectory = try fileManager.url(for: .cachesDirectory, in: .allDomainsMask, appropriateFor: nil, create: false)
+      let fileDirectory = cacheDirectory.appendingPathComponent("spacekit")
+      
+      var fileDir = fileDirectory.absoluteString
+      let range = fileDir.startIndex..<fileDir.index(fileDir.startIndex, offsetBy: 7)
+      fileDir.removeSubrange(range)
+      
+      try createFolderIfNeeded(atPath: fileDir, absolutePath: fileDirectory)
+      
+      let paths = try fileManager.contentsOfDirectory(atPath: fileDir)
+      
+      for path in paths {
+        if let object = NSKeyedUnarchiver.unarchiveObject(withFile: fileDir + path) as? SKObject {
+          if !object.isExpired {
+            add(object: object)
+          } else {
+            try? fileManager.removeItem(atPath: fileDir + path)
+          }
+        }
+      }
+    } catch {
+      throw Operations.loadFail
+    }
+  }
+  
+  /// Private method to store a cached object on the disk
+  ///
+  /// - Parameter object: The object which will be stored
+  /// - Throws: A possible error during save
+  private func save(object: SKObject) throws {
+    let fileManager = FileManager.default
+    
+    do {
+      let cacheDirectory = try fileManager.url(for: .cachesDirectory, in: .allDomainsMask, appropriateFor: nil, create: false)
+      let fileDirectory = cacheDirectory.appendingPathComponent("spacekit")
+      
+      var fileDir = fileDirectory.absoluteString
+      let range = fileDir.startIndex..<fileDir.index(fileDir.startIndex, offsetBy: 7)
+      fileDir.removeSubrange(range)
+      
+      try createFolderIfNeeded(atPath: fileDir, absolutePath: fileDirectory)
+      
+      
+      let fileFormatedName = object.key.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? object.key
+      let fileName = fileDirectory.appendingPathComponent(fileFormatedName)
+      
+      if !fileManager.fileExists(atPath: fileName.absoluteString) || object.isUpdated {
+        let data = NSKeyedArchiver.archivedData(withRootObject: object)
+        
+        try? data.write(to: fileName)
+        
+      }
+    } catch {
+      throw Operations.saveFail
+    }
+  }
 }
 

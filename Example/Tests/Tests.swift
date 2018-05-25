@@ -32,12 +32,6 @@ class Tests: XCTestCase {
     let objectImage = SKObject(value: image, key: "image")
     SKCache.shared.add(object: objectImage)
     
-    do {
-      try SKCache.shared.save()
-      try SKCache.shared.load()
-    } catch {
-      XCTAssertThrowsError(error.localizedDescription)
-    }
   }
   
   override func tearDown() {

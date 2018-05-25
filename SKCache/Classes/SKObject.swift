@@ -29,6 +29,9 @@ public class SKObject: NSObject, NSCoding {
     return Date().timeIntervalSinceNow > expirationDate.timeIntervalSinceNow
   }
   
+  /// Public property to indicate if an object is updated
+  open var isUpdated = false
+  
   // MARK: - Public methods
   
   public func encode(with aCoder: NSCoder) {
