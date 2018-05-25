@@ -130,40 +130,8 @@ let string: String? = SKCache.shared.get(forKey: "string")
 
 ### <a name="disk-storage"></a> Enable disk storage
 
-As mentioned `SKCache` supports optionally disk storage. All objects will be stored in the Cache directory of the device. To enable disk storage simply add `SKCache.load()` in the `application(, didFinishLaunchingWithOptions:)` in `AppDelegate.swift`:
-
-```swift
-func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-
-.
-.
-.
-
-do {
-try SKCache.load()
-} catch {
-print(error)
-}
-
-return true
-}
-```
-But that only will try to load the cache with objects. To fully utilize the disk storage `SKCache.save()` must be added in the `applicationDidEnterBackground(_)`:
-
-```swift
-func applicationDidEnterBackground(_ application: UIApplication) {
-
-.
-.
-.
-
-do {
-try SKCache.save()
-} catch {
-print(error)
-}
-}
-```
+As of version 1.3.0 disk storage is enabled by default. There is no need to call aditional method to load the cache with objects.
+A new property called isOnlyInMemory was introduced to indicate wether the cached objects will be saved on the disk space or will remain in the memory.
 
 ## Installation
 
