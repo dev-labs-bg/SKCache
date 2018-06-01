@@ -121,7 +121,7 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
     if objects?.contains(where: { $0.key == object.key }) == false {
       objects?.append(object)
       
-      setObject(objects as AnyObject, forKey: cacheKey as AnyObject)
+      set(object: objects as AnyObject)
     } else {
       update(object: object)
     }
@@ -154,7 +154,7 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
       objects?.append(object)
     }
     
-    setObject(objects as AnyObject, forKey: cacheKey as AnyObject)
+    set(object: objects as AnyObject)
   }
   
   /// Public method to save all cache content to the disk
@@ -183,8 +183,7 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
         try? data.write(to: fileName)
       }
       
-      setObject([SKObject]() as AnyObject, forKey: cacheKey as AnyObject)
-      
+      set(object: objects as AnyObject)
     } catch {
       throw Operations.saveFail
     }
@@ -195,7 +194,7 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
   override init() {
     super.init()
     
-    setObject([SKObject]() as AnyObject ,forKey: cacheKey as AnyObject)
+    set(object: [SKObject]() as AnyObject)
     try? load()
   }
   
@@ -205,6 +204,9 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
   
   /// read only private property to store the identifier of the read/write queue
   private let cacheKey = Bundle.main.bundleIdentifier ?? ""
+  
+  /// private property to store a lock for conqurency
+  private let lock = NSLock()
   
   // MARK: - Private methods
   
@@ -222,6 +224,15 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
     } catch {
       throw Operations.folderCreation
     }
+  }
+  
+  /// Private method to set object to the cache
+  ///
+  /// - Parameter object: The object to be added to the cache
+  private func set(object: AnyObject) {
+    lock.lock()
+    setObject(object, forKey: cacheKey as AnyObject)
+    lock.unlock()
   }
   
   /// Public method to load all object from disk to memory
