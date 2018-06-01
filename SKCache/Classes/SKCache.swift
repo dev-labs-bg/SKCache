@@ -194,8 +194,8 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
   override init() {
     super.init()
     
-    set(object: [SKObject]() as AnyObject)
-    try? load()
+    loadCache()
+    NotificationCenter.default.addObserver(self, selector: #selector(applicationIsActivating(notification:)), name: .UIApplicationWillEnterForeground, object: nil)
   }
   
   // MARK: - Override methods
@@ -296,6 +296,19 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
     } catch {
       throw Operations.saveFail
     }
+  }
+  
+  /// Private method to load the cache
+  private func loadCache() {
+    set(object: [SKObject]() as AnyObject)
+    try? load()
+  }
+  
+  /// Private method to handle notifications for active application state
+  ///
+  /// - Parameter notification: A notification send by the OS
+  @objc private func applicationIsActivating(notification: Notification) {
+    loadCache()
   }
 }
 
