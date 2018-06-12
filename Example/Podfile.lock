@@ -1,5 +1,5 @@
 PODS:
-  - SKCache (1.2.0)
+  - SKCache (1.4.1)
 
 DEPENDENCIES:
   - SKCache (from `../`)
@@ -9,8 +9,8 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  SKCache: 38ae86ec1dc1e428160016660c40aa95decf0eec
+  SKCache: b8ccb86a419e77fe3227173055b2b50a3259c32a
 
 PODFILE CHECKSUM: ec7c456f21e14a86871365fa529da0d78d435097
 
-COCOAPODS: 1.5.2
+COCOAPODS: 1.5.3

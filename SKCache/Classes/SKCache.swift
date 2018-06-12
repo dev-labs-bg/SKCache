@@ -283,15 +283,16 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
       
       try createFolderIfNeeded(atPath: fileDir, absolutePath: fileDirectory)
       
-      
       let fileFormatedName = object.key.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? object.key
-      let fileName = fileDirectory.appendingPathComponent(fileFormatedName)
+      
+      let convertedFileName = convertToBase64(withString: fileFormatedName)
+    
+      let fileName = fileDirectory.appendingPathComponent(convertedFileName)
       
       if !fileManager.fileExists(atPath: fileName.absoluteString) || object.isUpdated {
         let data = NSKeyedArchiver.archivedData(withRootObject: object)
         
         try? data.write(to: fileName)
-        
       }
     } catch {
       throw Operations.saveFail
@@ -302,6 +303,14 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
   private func loadCache() {
     set(object: [SKObject]() as AnyObject)
     try? load()
+  }
+  
+  /// Private method to convert a string to base 64 encoded string
+  ///
+  /// - Parameter withString: The string to be conferted
+  /// - Returns: The base 64 encoded string
+  private func convertToBase64(withString: String) -> String {
+    return Data(withString.utf8).base64EncodedString()
   }
   
   /// Private method to handle notifications for active application state
