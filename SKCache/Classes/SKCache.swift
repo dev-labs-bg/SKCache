@@ -285,7 +285,7 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
       
       let fileFormatedName = object.key.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? object.key
       
-      let convertedFileName = convertToBase64(withString: fileFormatedName)
+      let convertedFileName = convertToBase64(withString: fileFormatedName).suffix(45).map({ String($0) }).joined()
     
       let fileName = fileDirectory.appendingPathComponent(convertedFileName)
       
