@@ -16,13 +16,13 @@ public class SKObject: NSObject, NSCoding {
   // MARK: - Public properties
   
   /// Public property to store the value of the object
-  open let value: AnyObject
+  public let value: AnyObject
   
   /// Public property to store the key of the object
-  open let key: String
+  public let key: String
   
   /// Public property to store the expiration date of the object
-  open let expirationDate: Date
+  public let expirationDate: Date
   
   /// Public property to indicate if the object is expired
   open var isExpired: Bool {

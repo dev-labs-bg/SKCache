@@ -81,7 +81,7 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
   // MARK: - Singleton properties
   
   /// Public property to access a shared instance of the cache
-  open static var shared: SKCache {
+  public static var shared: SKCache {
     struct Static {
       static var instance = SKCache() {
         didSet {
@@ -97,13 +97,13 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
   // MARK: - Static properties
   
   /// Static property to store the count of element stored in the cache (by default it is 100)
-  open static var elementsCount = 100
+  public static var elementsCount = 100
   
   /// Static property to store the cost limit of the cache (by default it is 0)
-  open static var elementsCostLimit = 0
+  public static var elementsCostLimit = 0
   
   /// Static property to indicate wether the cached objects will be added to the disk storage or not
-  open static var isOnlyInMemory = false
+  public static var isOnlyInMemory = false
   
   // MARK: - Public properties
   
@@ -195,7 +195,7 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
     super.init()
     
     loadCache()
-    NotificationCenter.default.addObserver(self, selector: #selector(applicationIsActivating(notification:)), name: .UIApplicationWillEnterForeground, object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(applicationIsActivating(notification:)), name: UIApplication.willEnterForegroundNotification, object: nil)
   }
   
   // MARK: - Override methods
