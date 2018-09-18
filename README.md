@@ -25,7 +25,7 @@ library that gives you a god's power. It does nothing but caching, but it does i
 
 ## Key features
 
-- [x] Work with Swift 4 and Swift 3.2.
+- [x] Work with Swift 4.2, Swift 4 and Swift 3.2.
 - [x] Disk storage is optional.
 - [x] Support `expiry` and clean up of expired objects.
 - [x] Extensive unit test coverage
