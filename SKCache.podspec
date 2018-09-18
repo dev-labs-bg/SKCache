@@ -29,6 +29,7 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '10.0'
 
   s.source_files = 'SKCache/Classes/**/*'
+  s.pod_target_xcconfig = { 'SWIFT_VERSION' => '4.2' }
   
   # s.resource_bundles = {
   #   'SKCache' => ['SKCache/Assets/*.png']
