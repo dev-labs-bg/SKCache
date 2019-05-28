@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'SKCache'
-  s.version          = '1.5.1'
+  s.version          = '1.6.0'
   s.summary          = 'A caching libary to allow storing each possible type in Swift'
 
 # This description is used to generate tags and improve search results.
@@ -26,10 +26,10 @@ Pod::Spec.new do |s|
   s.source           = { :git => 'https://github.com/dev-labs-bg/SKCache.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
-  s.ios.deployment_target = '10.0'
+  s.ios.deployment_target = '11.0'
 
   s.source_files = 'SKCache/Classes/**/*'
-  s.pod_target_xcconfig = { 'SWIFT_VERSION' => '4.2' }
+  s.pod_target_xcconfig = { 'SWIFT_VERSION' => '5.0' }
   
   # s.resource_bundles = {
   #   'SKCache' => ['SKCache/Assets/*.png']

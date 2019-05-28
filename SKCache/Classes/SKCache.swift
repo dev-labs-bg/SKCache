@@ -149,7 +149,7 @@ public class SKCache: NSCache<AnyObject, AnyObject> {
   open func update(object: SKObject) {
     var objects = self.object(forKey: cacheKey as AnyObject) as? [SKObject]
     
-    if let index = objects?.index(where: { $0.key == object.key }) {
+    if let index = objects?.firstIndex(where: { $0.key == object.key }) {
       objects?.remove(at: index)
       objects?.append(object)
     }

@@ -51,7 +51,7 @@ class SKImageDownloader: NSObject {
       var task = URLSessionDataTask()
       task = URLSession.shared.dataTask(with: urlRequest) { (data, response, error) in
         
-        if let index = self.queue.index(of: task) {
+        if let index = self.queue.firstIndex(of: task) {
           self.queue.remove(at: index)
         }
         
@@ -101,7 +101,7 @@ class SKImageDownloader: NSObject {
       if task.state == .running {
         task.cancel()
         
-        if let index = queue.index(of: task) {
+        if let index = queue.firstIndex(of: task) {
           queue.remove(at: index)
         }
       }
